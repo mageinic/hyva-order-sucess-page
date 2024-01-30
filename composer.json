@@ -1,0 +1,29 @@
+{
+    "name": "mageinic/hyva-order-success-page",
+    "description": "Hyva Order Success Page by MageINIC, Hyva Order Success Page extension empowers you to create a personalized Thank You Page tailored to your store. It offers a comprehensive order summary, transparent shipping information, and the ability to add custom text. Enhance the post-purchase experience and communicate professionally with your customers.",
+    "type": "magento2-module",
+    "license": [
+        "OSL-3.0",
+        "AFL-3.0"
+    ],
+    "version": "1.0.0",
+    "require": {
+        "hyva-themes/magento2-compat-module-fallback": "*",
+        "mageinic/order-success-page": "1.0.*"
+    },
+    "authors": [
+        {
+            "name": "MageINIC",
+            "email": "support@mageinic.com",
+            "homepage": "https://www.mageinic.com"
+        }
+    ],
+    "autoload": {
+        "files": [
+            "registration.php"
+        ],
+        "psr-4": {
+            "Hyva\\MageINICOrderSuccessPage\\": ""
+        }
+    }
+}

@@ -1,0 +1,62 @@
+<?php
+/**
+ * MageINIC
+ * Copyright (C) 2023 MageINIC <support@mageinic.com>
+ *
+ * NOTICE OF LICENSE
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see https://opensource.org/licenses/gpl-3.0.html.
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category MageINIC
+ * @package Hyva_MageINICOrderSuccessPage
+ * @copyright Copyright (c) 2023 MageINIC (https://www.mageinic.com/)
+ * @license https://opensource.org/licenses/gpl-3.0.html GNU General Public License,version 3 (GPL-3.0)
+ * @author MageINIC <support@mageinic.com>
+ * phpcs:ignoreFile
+ */
+
+use Magento\Tax\Block\Sales\Order\Tax;
+use Magento\Framework\Escaper;
+
+/**
+ * @var $block Tax
+ * @var Escaper $escaper
+ */
+$order = $block->getOrder();
+$source = $block->getSource();
+$fullInfo = $this->helper(\Magento\Tax\Helper\Data::class)->getCalculatedTaxes($source);
+if ($fullInfo && $block->displayFullSummary()): ?>
+    <?php foreach ($fullInfo as $info): ?>
+        <?php
+        $percent = $info['percent'];
+        $amount = $info['tax_amount'];
+        $baseAmount = $info['base_tax_amount'];
+        $title = $info['title'];
+        ?>
+        <div>
+            <?= $escaper->escapeHtml($title) ?>
+            <?php if ($percent !== null): ?>
+                (<?= (float)$percent ?>%)
+            <?php endif; ?>
+        </div>
+        <div>
+            <?= /* @noEscape */ $order->formatPrice($amount) ?>
+        </div>
+    <?php endforeach; ?>
+<?php else: ?>
+<div>
+    <?= $escaper->escapeHtml(__('Tax')) ?>
+</div>
+<div>
+    <?= /* @noEscape */ $order->formatPrice($source->getTaxAmount()) ?>
+</div>
+<?php endif; ?>

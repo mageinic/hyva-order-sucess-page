@@ -1,0 +1,342 @@
+<?php
+/**
+ * MageINIC
+ * Copyright (C) 2023 MageINIC <support@mageinic.com>
+ *
+ * NOTICE OF LICENSE
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see https://opensource.org/licenses/gpl-3.0.html.
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category MageINIC
+ * @package Hyva_MageINICOrderSuccessPage
+ * @copyright Copyright (c) 2023 MageINIC (https://www.mageinic.com/)
+ * @license https://opensource.org/licenses/gpl-3.0.html GNU General Public License,version 3 (GPL-3.0)
+ * @author MageINIC <support@mageinic.com>
+ */
+
+use MageINIC\OrderSuccessPage\Block\Success;
+use Magento\Framework\Escaper;
+use Hyva\Theme\ViewModel\HeroiconsOutline;
+use Hyva\Theme\Model\ViewModelRegistry;
+use Magento\GiftMessage\Helper\Message as GiftMessageHelper;
+
+/**
+ * @var $block Success
+ * @var Escaper $escaper
+ * @var ViewModelRegistry $viewModels
+ */
+$order = $block->getOrder();
+$payment = $order->getPayment();
+$paymentMethod = $payment->getMethodInstance();
+$reorderUrl = $block->getReorder();
+$printUrl = $block->getPrint();
+$date = $order->getCreatedAt();
+$formatDate = $block->formatDate($date);
+$enable = $block->isEnableDetails();
+$thanksMessage = $block->getThankMessageDetails();
+$thanksMessageSize = $block->getThankMessageSizeDetails();
+$thanksMessageColor = $block->getThankMessageColorDetails();
+$textBeforeSize = $block->getBeforeTextSizeDetails();
+$textBeforeColor = $block->getBeforeTextColorDetails();
+$textAfterSize = $block->getAfterTextSizeDetails();
+$textAfterColor = $block->getAfterTextColorDetails();
+$description = $block->getEditorDetails();
+$thanksMassage = $block->getThankMessageDetails();
+$textBefore = $block->getBeforeTextDetails();
+$heroicons = $viewModels->require(HeroiconsOutline::class);
+$helper = $this->helper(GiftMessageHelper::class);
+$cols = $block->getData('is_context_shipment') ? 3 : 5;
+?>
+<div class="checkout-success container py-4 px-6">
+    <?php if ($order->getIncrementId()): ?>
+        <?php if ($block->getCustomerId()): ?>
+            <p><?= /* @noEscape */ ('Your order number is: ' .sprintf(
+                        '<a href="%s" class="order-number"><strong>%s</strong></a>',
+                        $block->getReorder(),
+                        $order->getIncrementId()
+                    )) ?></p>
+        <?php else: ?>
+            <p>
+                <?= $escaper->escapeHtml(__('Your order # is: <span>%1</span>.', $order->getIncrementId()), ['span']) ?>
+            </p>
+        <?php endif; ?>
+        <p>
+            <?= $escaper->escapeHtml(__('We\'ll email you an order confirmation with details and tracking info.')) ?>
+        </p>
+    <?php endif; ?>
+</div>
+
+<?php if ($enable): ?>
+<div class="order-details">
+    <div class="description">
+        <p><?= /* @noEscape */$description?></p>
+    </div>
+    <div>
+        <p style="color:<?= $thanksMessageColor ?>; font-size: <?= $thanksMessageSize.'px' ?>;">
+            <?=$escaper->escapeHtml(__($thanksMassage)) ?>
+        </p>
+    </div>
+    <?php if ($block->isEnableOrderStatusDetails()): ?>
+        <div class="order-date">
+        <span class="label"> <?= $escaper->escapeHtml(__('Order Date: ')) ?>
+            <date><?= /* @noEscape */$formatDate ?></date>
+        </span>
+        </div>
+        <div class="status">
+            <p><?=  $block->escapeHtml(__('Order Status: ')) ?>
+                <span><?=  $block->escapeHtml($order->getStatusLabel()) ?></span>
+            </p>
+        </div>
+    <?php endif;//phpcs:ignore ?>
+    <div>
+        <p style="color:<?= $textBeforeColor ?>; font-size: <?= $textBeforeSize.'px'?>">
+            <?= $escaper->escapeHtml(__($textBefore)) ?>
+        </p>
+    </div>
+    <div class="info">
+        <?php if ($block->isEnableShippingAddressDetails()): ?>
+            <?php $formatShip = $block->formatShipping(); ?>
+            <div class="order-shipping-address">
+                <strong class="box-title">
+                    <span class="box-des"><?= $escaper->escapeHtml(__('Shipping Address')) ?></span>
+                </strong>
+                <div class="box-content">
+                    <?php if ($formatShip): ?>
+                        <address><?= /* @noEscape */ $formatShip; ?></address>
+                    <?php else: ?>
+                        <?= $escaper->escapeHtml(__('No shipping Address available')) ?>
+                    <?php endif; ?>
+                </div>
+            </div>
+        <?php endif; ?>
+        <?php if ($block->isEnableShippingMethodDetails()): ?>
+            <?php $shippingMethod = $order->getShippingDescription(); ?>
+            <div class="box box-order-shipping-method">
+                <strong class="box-title">
+                    <span class="box-des"><?= $escaper->escapeHtml(__('Shipping Method')) ?></span>
+                </strong>
+                <div class="box-content">
+                    <?php if ($order->getShippingDescription()): ?>
+                        <?= /* @noEscape */$shippingMethod; ?>
+                    <?php else: ?>
+                        <?= $escaper->escapeHtml(__('No shipping information available')) ?>
+                    <?php endif; ?>
+                </div>
+            </div>
+        <?php endif; ?>
+        <?php if ($block->isEnableBillingAddressDetails()): ?>
+            <?php $formatBilling = $block->formatBilling(); ?>
+            <div class="box box-order-billing-address">
+                <strong class="box-title">
+                    <span class="box-des"><?= $escaper->escapeHtml(__('Billing Address')) ?></span>
+                </strong>
+                <div class="box-content">
+                    <address><?= /* @noEscape */$formatBilling; ?></address>
+                </div>
+            </div>
+        <?php endif; ?>
+        <?php if ($block->isEnablePaymentMethodDetails()): ?>
+            <?php $methodTitle = $paymentMethod->getTitle(); ?>
+            <div class="box box-order-billing-method">
+                <strong class="box-title">
+                    <span class="box-des"><?= $escaper->escapeHtml(__('Payment Method')) ?></span>
+                </strong>
+                <div class="box-content">
+                    <?= /* @noEscape */$methodTitle ?>
+                </div>
+            </div>
+        <?php endif; ?>
+    </div>
+    <?php if ($block->isEnableOrderProductDetails()): ?>
+        <div class="order-items">
+            <div class="hidden lg:grid grid-cols-<?= $escaper->escapeHtmlAttr($cols) ?> text-sm text-secondary mt-2">
+                <div class="p-2 col-span-2"><?= $escaper->escapeHtml(__('Product Name')) ?></div>
+                <?php if (!$block->getData('is_context_shipment')): ?>
+                    <div class="p-2"><?= $escaper->escapeHtml(__('Price')) ?></div><?php endif; ?>
+                <div class="p-2"><?= $escaper->escapeHtml(__('Qty')) ?></div>
+                <?php if (!$block->getData('is_context_shipment')): ?>
+                    <div class="p-2 text-right"><?= $escaper->escapeHtml(__('Subtotal')) ?></div><?php endif; ?>
+            </div>
+            <?php
+            $items = $order->getItemsCollection();
+            $cols = $block->getData('is_context_shipment') ? 3 : ($block->getData('is_context_creditmemo') ? 7 : 5);
+            foreach ($items as $item): ?>
+                <div class="lg:grid grid-cols-<?= $escaper->escapeHtmlAttr($cols) ?> py-2">
+                    <div class="p-2 col-span-2">
+                        <span class="font-semibold"><?= $escaper->escapeHtml($item->getName()) ?></span>
+                        <div class="item-options mt-2">
+                            <div class="text-sm flex">
+                                <span><?= $escaper->escapeHtml(__('SKU')) ?>:</span>
+                                <span class="text-sm ml-1"><?= /* @noEscape */ $item->getSku() ?></span>
+                            </div>
+                            <?php if ($options = $block->getItemOptions($item)): ?>
+                                <?php foreach ($options as $option): ?>
+                                    <div class="text-sm flex mt-1">
+                                        <span><?= $escaper->escapeHtml($option['label']) ?>:</span>
+                                        <?php if (!$block->getPrintStatus()): ?>
+                                            <?php $formatedOptionValue = $block->getFormatedOptionValue($option) ?>
+                                            <span class="ml-1">
+                                <?= $escaper->escapeHtml($formatedOptionValue['value'], ['a']) ?>
+                        </span>
+                                        <?php else: ?>
+                                            <span class="ml-1">
+                                <?= $escaper->escapeHtml(
+                                    (isset($option['print_value']) ? $option['print_value'] : $option['value'])
+                                ) ?>
+                            </span>
+                                        <?php endif; ?>
+                                    </div>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                            <?php /* downloadable */ ?>
+                            <?php if ($links = $block->getLinks()): ?>
+                                <div class="item options my-2">
+                                    <p><?= $escaper->escapeHtml($block->getLinksTitle()) ?></p>
+                                    <?php foreach ($links->getPurchasedItems() as $link): ?>
+                                        <p class="ml-1"><?= $escaper->escapeHtml($link->getLinkTitle()) ?></p>
+                                    <?php endforeach; ?>
+                                </div>
+                            <?php endif; ?>
+                            <?php $addtInfoBlock = $block->getProductAdditionalInformationBlock(); ?>
+                            <?php if ($addtInfoBlock): ?>
+                                <?= $addtInfoBlock->setItem($item)->toHtml() ?>
+                            <?php endif; ?>
+                            <?= $escaper->escapeHtml($item->getDescription()) ?>
+                        </div>
+                    </div>
+                    <?php if (!$block->getData('is_context_shipment')): ?>
+                        <div class="p-2 flex justify-between lg:block">
+                            <p class="lg:sr-only font-medium"><?= $escaper->escapeHtml(__('Price')) ?></p>
+                            <?= $block->formatPrice($item->getPrice(), true, false) ?>
+                        </div>
+                        <div class="p-2 flex justify-between lg:block">
+                            <p class="lg:sr-only font-medium"><?= $escaper->escapeHtml(__('Qty')) ?></p>
+                            <?= $item->getQtyOrdered() ?>
+                        </div>
+                        <?php if (!$block->getData('is_context_shipment')): ?>
+                            <div class="p-2 text-right flex justify-between lg:block">
+                                <p class="lg:sr-only font-medium"><?= $escaper->escapeHtml(__('Subtotal')) ?></p>
+                                <?= $block->formatPrice($item->getRowTotal(), true, false);//phpcs:ignore ?>
+                            </div>
+                        <?php endif; ?>
+                    <?php endif; ?>
+                    <div class="p-2 flex justify-between lg:block">
+                        <p class="lg:sr-only font-medium">
+                            <?php if ($block->getData('is_context_invoice')): ?>
+                                <?= $escaper->escapeHtml(__('Qty Invoiced')) ?>
+                            <?php elseif ($block->getData('is_context_shipment')): ?>
+                                <?= $escaper->escapeHtml(__('Qty Shipped')) ?>
+                            <?php else: ?>
+                                <?= $escaper->escapeHtml(__('Qty')) ?>
+                            <?php endif; ?>
+                        </p>
+                        <div class="text-right lg:text-left">
+                            <?php if ($block->getData('is_context_invoice') || $block->getData('is_context_creditmemo')): ?>
+                                <span class="content"><?= /** @noEscape */ $localeFormatter->formatNumber($block->getItem()->getQty()) ?></span>
+                            <?php endif; ?>
+                            <?php if ($block->getData('is_context_shipment')): ?>
+                                <span class="content"><?= /** @noEscape */ $localeFormatter->formatNumber($block->getItem()->getQty()) ?></span>
+                            <?php endif; ?>
+                            <?php if ($block->getData('is_context_order')): ?>
+                                <?php if ($block->getItem()->getQtyOrdered() > 0): ?>
+                                    <p>
+                                        <span class="title"><?= $escaper->escapeHtml(__('Ordered')) ?>:</span>
+                                        <span class="content"><?= /** @noEscape */ $localeFormatter->formatNumber($block->getItem()->getQtyOrdered()) ?></span>
+                                    </p>
+                                <?php endif; ?>
+                                <?php if ($block->getItem()->getQtyShipped() > 0): ?>
+                                    <p>
+                                        <span class="title"><?= $escaper->escapeHtml(__('Shipped')) ?>:</span>
+                                        <span class="content"><?= /** @noEscape */ $localeFormatter->formatNumber($block->getItem()->getQtyShipped()) ?></span>
+                                    </p>
+                                <?php endif; ?>
+                                <?php if ($block->getItem()->getQtyCanceled() > 0): ?>
+                                    <p>
+                                        <span class="title"><?= $escaper->escapeHtml(__('Canceled')) ?>:</span>
+                                        <span class="content"><?= /** @noEscape */ $localeFormatter->formatNumber($block->getItem()->getQtyCanceled()) ?></span>
+                                    </p>
+                                <?php endif; ?>
+                                <?php if ($block->getItem()->getQtyRefunded() > 0): ?>
+                                    <p>
+                                        <span class="title"><?= $escaper->escapeHtml(__('Refunded')) ?>:</span>
+                                        <span class="content"><?= /** @noEscape */ $localeFormatter->formatNumber($block->getItem()->getQtyRefunded()) ?></span>
+                                    </p>
+                                <?php endif; ?>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                </div>
+            <?php endforeach ?>
+            <tfoot>
+            <div class="flex justify-end border-t border-container mt-2">
+                <div class="lg:w-1/3">
+                    <div class="grid grid-cols-2 text-right p-2 gap-2">
+                        <?= $block->getChildHtml('order.totals') ?>
+                    </div>
+                </div>
+            </div>
+            </tfoot>
+        </table>
+    </div>
+    <?php endif ?>
+    <div class="text-under">
+        <?php $textAfter = $block->getAfterTextDetails() ?>
+        <p style="color:<?= $textAfterColor ?>; font-size: <?= $textAfterSize.'px'?>">
+            <?= $escaper->escapeHtml(__($textAfter)) ?>
+        </p>
+        <div class="actions-order">
+            <?php if ($block->canViewReorder()): ?>
+                <div class="reorderUrl">
+                    <a class="action-reorder" href="<?= $escaper->escapeUrl($reorderUrl) ?>">
+                        <button type="submit" class="btn btn-secondary text-secondary-darker">
+                            <?= $heroicons->refreshHtml('mr-1 inline-block', 24, 24, ['aria-hidden' => 'true']); ?>
+                            <span><?= $escaper->escapeHtml(__('Reorder')) ?></span>
+                        </button>
+                    </a>
+                </div>
+            <?php endif ?>
+            <?php if ($block->canViewPrint()): ?>
+                <div class="printUrl">
+                    <a href="<?= $escaper->escapeUrl($printUrl) ?>" onclick="this.target='_blank';"
+                       class="ml-6 btn btn-secondary text-secondary-darker"
+                       target="_blank"
+                       rel="noopener">
+                        <?= $heroicons->printerHtml('mr-1 inline-block', 24, 24, ['aria-hidden' => 'true']); ?>
+                        <span><?= $escaper->escapeHtml(__('Print Order')) ?></span>
+                    </a>
+                </div>
+            <?php endif ?>
+        </div>
+    </div>
+    <?php endif ?>
+    <div class="my-4">
+        <a class="btn btn-primary inline-flex" href="<?= $escaper->escapeUrl($block->getUrl()) ?>">
+            <span><?= $escaper->escapeHtml(__('Continue Shopping')) ?></span>
+        </a>
+    </div>
+    <style>
+        .thank-message {
+            font-size: <?= $escaper->escapeHtml($thanksMessageSize).'px' ?>;
+            color: <?= $escaper->escapeHtml($thanksMessageColor) ?>;
+        }
+
+        .before-message {
+            font-size: <?= $escaper->escapeHtml($textBeforeSize).'px' ?>;
+            color: <?= $escaper->escapeHtml($textBeforeColor) ?>;
+        }
+
+        .after-message {
+            font-size: <?= $escaper->escapeHtml($textAfterSize).'px' ?>;
+            color: <?= $escaper->escapeHtml($textAfterColor) ?>;
+        }
+    </style>
+
