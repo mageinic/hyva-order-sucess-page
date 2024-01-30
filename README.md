@@ -18,7 +18,7 @@ php bin/magento cache:flush
 ```
 
 **Note:**
-Magento 2 Size Chart requires installing [MageINIC Size Chart](https://github.com/mageinic/order-success-page) in your Magento installation.
+Magento 2 Order Success Page requires installing [MageINIC Order Success Page](https://github.com/mageinic/order-success-page) in your Magento installation.
 
 **Or Install via composer [Recommend]**
 ```
